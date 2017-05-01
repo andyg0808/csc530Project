@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Build Z3 if needed
+make z3/build/com.microsoft.z3.jar
+
 # Seems that we have to set LD_LIBRARY_PATH to make ld happy for loading the
 # additional .so files needed, and that we have to set java.library.path
 # because it looks for liblibz3java.so on linux, which doesn't exist. But
