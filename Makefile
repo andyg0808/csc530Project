@@ -1,4 +1,4 @@
-.PHONY: run clean
+.PHONY: run clean deepclean
 run: z3/build/com.microsoft.z3.jar
 	# Seems that we have to set LD_LIBRARY_PATH to make ld happy for loading the
 	# additional .so files needed, and that we have to set java.library.path
@@ -12,6 +12,11 @@ z3/build/com.microsoft.z3.jar:
 	cd z3; python3 ./scripts/mk_make.py --java
 	cd z3/build; $(MAKE)
 
+# Basic clean for everyday use
 clean:
+	sbt clean
+
+# Clean z3 as well
+deepclean: clean
 	cd z3; rm -r build
 	cd z3; git clean -xdf
