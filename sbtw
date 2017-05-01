@@ -3,8 +3,8 @@
 # Build Z3 if needed
 make z3/build/com.microsoft.z3.jar
 
-# Seems that we have to set LD_LIBRARY_PATH to make ld happy for loading the
-# additional .so files needed, and that we have to set java.library.path
-# because it looks for liblibz3java.so on linux, which doesn't exist. But
-# that's just a guess, and could be completely wrong.
-LD_LIBRARY_PATH=z3/build  sbt -Djava.library.path=z3/build/libz3java.so "$@"
+# On my machine, /tmp is mounted noexec, so I can't execute code from there.
+# SBT copies libraries to a temp directory before executing, so setting
+# java.io.tmpdir makes sure it uses a tempdir that it can execute from
+# We also have to set LD_LIBRARY_PATH to indicate where the Z3 libraries are
+LD_LIBRARY_PATH=z3/build  sbt -Djava.io.tmpdir=temp "$@"
