@@ -4,7 +4,7 @@ run: z3/build/com.microsoft.z3.jar
 	# additional .so files needed, and that we have to set java.library.path
 	# because it looks for liblibz3java.so on linux, which doesn't exist. But
 	# that's just a guess, and could be completely wrong.
-	LD_LIBRARY_PATH=../z3/build  sbt -Djava.library.path=../z3/build/libz3java.so run
+	LD_LIBRARY_PATH=z3/build  sbt -Djava.library.path=z3/build/libz3java.so run
 
 z3/build/com.microsoft.z3.jar:
 	git submodule init
