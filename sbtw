@@ -3,6 +3,9 @@
 # Build Z3 if needed
 make z3/build/com.microsoft.z3.jar
 
+# Create temp directory. See below
+mkdir -p temp
+
 # On my machine, /tmp is mounted noexec, so I can't execute code from there.
 # SBT copies libraries to a temp directory before executing, so setting
 # java.io.tmpdir makes sure it uses a tempdir that it can execute from
