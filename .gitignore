@@ -1,2 +1,4 @@
 *.swp
 target/
+/.idea
+/bin/
