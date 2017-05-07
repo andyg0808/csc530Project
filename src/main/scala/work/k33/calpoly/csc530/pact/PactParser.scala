@@ -17,7 +17,7 @@ object PactParser {
         LamC(params.toList.map(_.asInstanceOf[SSymbol].value), parse(body))
       case SList(SSymbol('var), assignments, body) if validAssignments(assignments) =>
         val assignmentMap = extractAssignments(assignments)
-        AppC(LamC(assignmentMap.keys.toList, parse(body)), assignmentMap.values.toList.map(parse))
+        AppC(LamC(assignmentMap.keys.toList.reverse, parse(body)), assignmentMap.values.toList.reverse.map(parse))
       case SCons(func, args) =>
         AppC(parse(func), args.toList.map(parse))
       case _ =>
@@ -29,20 +29,20 @@ object PactParser {
     !List('var, 'if, 'lam, '=).contains(sym)
   }
 
-  private def validParams(sexp: SExp): Boolean = {
+  private def validParams(sexp: SExp, seen: Set[Symbol] = Set()): Boolean = {
     sexp match {
       case SNil() => true
-      case SCons(SSymbol(sym), rest) if validId(sym) =>
-        validParams(rest)
+      case SCons(SSymbol(sym), rest) if validId(sym) && !seen.contains(sym) =>
+        validParams(rest, seen + sym)
       case _ => false
     }
   }
 
-  private def validAssignments(assignments: SExp): Boolean = {
+  private def validAssignments(assignments: SExp,  seen: Set[Symbol] = Set()): Boolean = {
     assignments match {
       case SNil() => true
-      case SCons(SList(SSymbol(sym), SSymbol('=), _), rest) if validId(sym) =>
-        validAssignments(rest)
+      case SCons(SList(SSymbol(sym), SSymbol('=), _), rest) if validId(sym) && !seen.contains(sym) =>
+        validAssignments(rest, seen + sym)
       case _ => false
     }
   }

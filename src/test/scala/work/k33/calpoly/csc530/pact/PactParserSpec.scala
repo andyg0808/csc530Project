@@ -48,6 +48,8 @@ object PactParserSpec {
       "(lam (z) 1 x)",
       "(lam (foo) -1 y 0)",
       "(lam (a) z 1 foo -1)",
+      "(lam (x x) 1)",
+      "(var ((x = 10) (x = 11)) 3)",
       "lam")
 }
 

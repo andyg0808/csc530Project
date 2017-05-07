@@ -12,6 +12,6 @@ object PactInterpreterSpec {
 
 class PactInterpreterSpec extends FlatSpec with Matchers {
   "The interpreter" should "evaluate this program to 20" in {
-    PactInterpreter.topInterp(PactInterpreterSpec.TESTCASE) shouldEqual "20"
+    new PactInterpreter(StdInProvider).topInterp(PactInterpreterSpec.TESTCASE) shouldEqual "20"
   }
 }
