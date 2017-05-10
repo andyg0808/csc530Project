@@ -116,7 +116,7 @@ class PactInterpreter(inputProvider: InputProvider) {
     if (allNums(args)) {
       val concVal = NumV(args.map(_.concrete.asInstanceOf[NumV].num).sum)
       val symVal = args.map(_.symbolic.asInstanceOf[SymbolicNum])
-                   .fold(NumS(0))((res, symVal) => ArithS('+, res, symVal))
+                   .fold(NumS(0))(ArithS('+, _, _))
       Values(concVal, symVal)
     } else {
       throw PactInterpreterException("Invalid arguments to +")
@@ -137,7 +137,7 @@ class PactInterpreter(inputProvider: InputProvider) {
     if (allNums(args)) {
       val concVal = NumV(args.map(_.concrete.asInstanceOf[NumV].num).product)
       val symVal = args.map(_.symbolic.asInstanceOf[SymbolicNum])
-                   .fold(NumS(1))((res, symVal) => ArithS('*, res, symVal))
+                   .fold(NumS(1))(ArithS('*, _, _))
       Values(concVal, symVal)
     } else {
       throw PactInterpreterException("Invalid arguments to *")
