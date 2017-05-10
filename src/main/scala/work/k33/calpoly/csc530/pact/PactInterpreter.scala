@@ -186,7 +186,7 @@ class PactInterpreter(inputProvider: InputProvider) {
   }
 
   private def pact_&&(args: List[Values]): Values = {
-    if (allBool(args) || args.length > 0) {
+    if (allBool(args)) {
       val concVal = BoolV(args.forall(_.concrete.asInstanceOf[BoolV].bool))
       val symVal = args.map(_.symbolic.asInstanceOf[SymbolicBool])
                    .fold(BoolS(true))(LogicS('&&, _, _))
@@ -197,8 +197,8 @@ class PactInterpreter(inputProvider: InputProvider) {
   }
 
   private def pact_||(args: List[Values]): Values = {
-    if (allBool(args) || args.length > 0) {
-      val concVal = BoolV(args.foldLeft(false)((res, v) => v.concrete.asInstanceOf[BoolV].bool || res))
+    if (allBool(args)) {
+      val concVal = BoolV(args.exists(_.concrete.asInstanceOf[BoolV].bool))
       val symVal = args.map(_.symbolic.asInstanceOf[SymbolicBool])
                    .fold(BoolS(false))(LogicS('||, _, _))
       Values(concVal, symVal)
