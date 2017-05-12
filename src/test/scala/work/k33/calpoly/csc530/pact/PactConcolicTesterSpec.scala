@@ -28,5 +28,4 @@ class PactConcolicTesterSpec extends FlatSpec {
     val results = PactConcolicTester.test(expr, None)
     results.foreach(r => r.result should be('right))
   }
-
 }
