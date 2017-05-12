@@ -59,6 +59,8 @@ class ConstraintSolver(constraints: List[SymbolicBool], numSymbols: Int) {
         op match {
           case '== => context.mkNot(context.mkXor(leftExpr, rightExpr))
           case '!= => context.mkXor(leftExpr, rightExpr)
+          case '&& => context.mkAnd(leftExpr, rightExpr)
+          case '|| => context.mkOr(leftExpr, rightExpr)
         }
       case NotS(boolSym) =>
         context.mkNot(toZ3Expr(boolSym))
