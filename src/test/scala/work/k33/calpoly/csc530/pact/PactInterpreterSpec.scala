@@ -14,4 +14,21 @@ class PactInterpreterSpec extends FlatSpec with Matchers {
   "The interpreter" should "evaluate this program to 20" in {
     new PactInterpreter(StdInProvider).topInterp(PactInterpreterSpec.TESTCASE) shouldEqual "20"
   }
+
+  "The && function" should "only be true if all arguments are true" in {
+    new PactInterpreter(StdInProvider).runAST(AppC(IdC('&&), List(IdC('true), IdC('true)))) shouldEqual BoolV(true)
+    new PactInterpreter(StdInProvider).runAST(AppC(IdC('&&), List(IdC('false), IdC('true)))) shouldEqual BoolV(false)
+    new PactInterpreter(StdInProvider).runAST(AppC(IdC('&&), List(IdC('true), IdC('true), IdC('true)))) shouldEqual BoolV(true)
+    new PactInterpreter(StdInProvider).runAST(AppC(IdC('&&), List(IdC('true), IdC('true), IdC('false)))) shouldEqual BoolV(false)
+    new PactInterpreter(StdInProvider).runAST(AppC(IdC('&&), List())) shouldEqual BoolV(true)
+  }
+
+  "The || function" should "be true if any argument is true" in {
+    new PactInterpreter(StdInProvider).runAST(AppC(IdC('||), List(IdC('true), IdC('true)))) shouldEqual BoolV(true)
+    new PactInterpreter(StdInProvider).runAST(AppC(IdC('||), List(IdC('false), IdC('true)))) shouldEqual BoolV(true)
+    new PactInterpreter(StdInProvider).runAST(AppC(IdC('||), List(IdC('true), IdC('true), IdC('true)))) shouldEqual BoolV(true)
+    new PactInterpreter(StdInProvider).runAST(AppC(IdC('||), List(IdC('true), IdC('true), IdC('false)))) shouldEqual BoolV(true)
+    new PactInterpreter(StdInProvider).runAST(AppC(IdC('||), List(IdC('false), IdC('false), IdC('false)))) shouldEqual BoolV(false)
+    new PactInterpreter(StdInProvider).runAST(AppC(IdC('||), List())) shouldEqual BoolV(false)
+  }
 }

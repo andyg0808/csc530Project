@@ -58,6 +58,16 @@ class PactParserSpec extends FlatSpec with Matchers {
     PactParser.parse(SExp.from(PactParserSpec.TESTCASE))
   }
 
+  it should "support new && function" in {
+    val text = "(&& false true true)"
+    PactParser.parse(SExp.from(text)) should be(AppC(IdC('&&), List(IdC('false), IdC('true), IdC('true))))
+  }
+
+  it should "support new || function" in {
+      val text = "(|| false true true)"
+      PactParser.parse(SExp.from(text)) should be(AppC(IdC('||), List(IdC('false), IdC('true), IdC('true))))
+  }
+
   PactParserSpec.BAD_TESTCASES.foreach(badTestcase =>
     it should s"throw an exception on $badTestcase" in {
       intercept[PactParserException] {

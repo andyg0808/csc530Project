@@ -7,9 +7,10 @@ class ConstraintSolver(constraints: List[SymbolicBool], numSymbols: Int) {
   val constants: Map[Int, IntExpr] = (0 until numSymbols).map(idx => idx -> context.mkIntConst(s"x$idx")).toMap
 
   def solve(): Option[Map[Int, Int]] = {
-    val conjunction = context.mkAnd(constraints.map(toZ3Expr): _*)
     val solver = context.mkSolver()
-    solver.add(conjunction)
+    // I'm not sure that adding multiple constraints is better than anding all the constraints, but
+    // I'm guessing it's better to give the solver more information about the constraints.
+    constraints.map(toZ3Expr).foreach(solver.add(_))
     val status = solver.check()
 
     status match {
@@ -58,6 +59,8 @@ class ConstraintSolver(constraints: List[SymbolicBool], numSymbols: Int) {
         op match {
           case '== => context.mkNot(context.mkXor(leftExpr, rightExpr))
           case '!= => context.mkXor(leftExpr, rightExpr)
+          case '&& => context.mkAnd(leftExpr, rightExpr)
+          case '|| => context.mkOr(leftExpr, rightExpr)
         }
       case NotS(boolSym) =>
         context.mkNot(toZ3Expr(boolSym))

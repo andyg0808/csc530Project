@@ -3,6 +3,7 @@ package work.k33.calpoly.csc530.pact
 import java.nio.file.{Files, Paths}
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 case class Input(inputs: Map[Int, Int], bound: Int)
 
@@ -18,22 +19,16 @@ object PactConcolicTester extends App {
     }
   }
 
-  def test(program: String, maxIterations: Option[Int]): Unit = {
+  def test(ast: ExprC, maxIterations: Option[Int]): Seq[Result] = {
+    val ret = new ArrayBuffer[Result]
     var iterations = 0
-    val ast = PactParser.parse(SExp.from(program))
-    val maxCoverage = getAllExpressions(ast)
-    val totalCoverage = mutable.Set[ExprC]()
     val workList: mutable.Queue[Input] = mutable.Queue(Input(Map(), 1))
     while (workList.nonEmpty && maxIterations.forall(iterations < _)) {
       val input = workList.dequeue()
       val interpreter = new PactInterpreter(new ConcolicInputProvider(input.inputs))
-      val Result(result, constraints, numSymbols, coverage, inputs) = interpreter.execute(ast)
-      totalCoverage ++= coverage
-      val inputStr = inputs.mkString("[", ", ", "]")
-      result match {
-        case Left(errorMsg) => println(s"Inputs $inputStr:\n    Caused ***$errorMsg***")
-        case Right(res) => println(s"Inputs $inputStr:\n    Result: $res ")
-      }
+      val res = interpreter.execute(ast)
+      ret += res
+      val Result(_, constraints, numSymbols, _, _) = res
       for (i <- input.bound to constraints.size) {
         val pc = constraints.takeRight(i)
         val toSolve = NotS(pc.head) :: pc.tail
@@ -42,8 +37,25 @@ object PactConcolicTester extends App {
       }
       iterations += 1
     }
+    ret
+  }
+
+  def test(program: String, maxIterations: Option[Int]): Unit = {
+    val ast = PactParser.parse(SExp.from(program))
+    val maxCoverage = getAllExpressions(ast)
+    val totalCoverage = mutable.Set[ExprC]()
+    val results = test(ast, maxIterations);
+    results.foreach(r => {
+      val Result(result, _, _, coverage, inputs) = r
+      totalCoverage ++= coverage
+      val inputStr = inputs.mkString("[", ", ", "]")
+      result match {
+        case Left(errorMsg) => println(s"Inputs $inputStr:\n    Caused ***$errorMsg***")
+        case Right(res) => println(s"Inputs $inputStr:\n    Result: $res ")
+      }
+    })
     println(s"\nCoverage: ${totalCoverage.size}/${maxCoverage.size}")
-    println(s"Iterations: $iterations")
+    println(s"Iterations: ${results.size}")
   }
 
   def getAllExpressions(expr: ExprC): Set[ExprC] = {

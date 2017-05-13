@@ -22,6 +22,10 @@ class PactInterpreter(inputProvider: InputProvider) {
     execute(PactParser.parse(SExp.from(program))).result.fold(identity, identity)
   }
 
+  def runAST(expr: ExprC): Value = {
+    interp(expr, INITIAL_ENV, INITIAL_SYMBOLIC_ENV).concrete
+  }
+
   def execute(expr: ExprC): Result = {
     val result: Either[String, String] =
       try {
@@ -39,6 +43,7 @@ class PactInterpreter(inputProvider: InputProvider) {
       case NumC(num) => Values(NumV(num), NumS(num))
       case IdC(sym) =>
         val value = env.getOrElse(sym, throw PactInterpreterException(s"Unbound id $sym"))
+        // If value was found, symVal will be as well.
         val symVal = symEnv(sym)
         Values(value, symVal)
       case LamC(params, body) => Values(CloV(params, body, env, symEnv), FuncS())
@@ -51,6 +56,7 @@ class PactInterpreter(inputProvider: InputProvider) {
           case _ => throw PactInterpreterException("Non-boolean guard")
         }
       case AppC(func, args) =>
+        // Interpret the function value to get something which can be run
         interp(func, env, symEnv) match {
           case Values(CloV(params, body, cloEnv, cloSymEnv), _) =>
             val argResults = args.map(interp(_, env, symEnv))
@@ -85,6 +91,8 @@ class PactInterpreter(inputProvider: InputProvider) {
     '>= -> PrimV(pactCmp(_ >= _, '>=)),
     '== -> PrimV(pact_==),
     '!= -> PrimV(pact_!=),
+    '&& -> PrimV(pact_&&),
+    '|| -> PrimV(pact_||),
     'not -> PrimV(pactNot),
     'input -> PrimV(pactInput))
 
@@ -101,6 +109,8 @@ class PactInterpreter(inputProvider: InputProvider) {
     '>= -> FuncS(),
     '== -> FuncS(),
     '!= -> FuncS(),
+    '&& -> FuncS(),
+    '|| -> FuncS(),
     'not -> FuncS(),
     'input -> FuncS())
 
@@ -175,6 +185,28 @@ class PactInterpreter(inputProvider: InputProvider) {
     }
   }
 
+  private def pact_&&(args: List[Values]): Values = {
+    if (allBool(args)) {
+      val concVal = BoolV(args.forall(_.concrete.asInstanceOf[BoolV].bool))
+      val symVal = args.map(_.symbolic.asInstanceOf[SymbolicBool])
+                   .fold(BoolS(true))(LogicS('&&, _, _))
+      Values(concVal, symVal)
+    } else {
+      throw PactInterpreterException(s"Invalid arguments to &&")
+    }
+  }
+
+  private def pact_||(args: List[Values]): Values = {
+    if (allBool(args)) {
+      val concVal = BoolV(args.exists(_.concrete.asInstanceOf[BoolV].bool))
+      val symVal = args.map(_.symbolic.asInstanceOf[SymbolicBool])
+                   .fold(BoolS(false))(LogicS('||, _, _))
+      Values(concVal, symVal)
+    } else {
+      throw PactInterpreterException(s"Invalid arguments to ||")
+    }
+  }
+
   private def pactNot(args: List[Values]): Values = {
     args match {
       case List(Values(BoolV(bool), symVal: SymbolicBool)) =>
@@ -201,5 +233,9 @@ class PactInterpreter(inputProvider: InputProvider) {
 
   private def allNums(args: List[Values]): Boolean = {
     args.forall(arg => arg.concrete.isInstanceOf[NumV] && arg.symbolic.isInstanceOf[SymbolicNum])
+  }
+
+  private def allBool(args: List[Values]): Boolean = {
+    args.forall(arg => arg.concrete.isInstanceOf[BoolV] && arg.symbolic.isInstanceOf[BoolS])
   }
 }
