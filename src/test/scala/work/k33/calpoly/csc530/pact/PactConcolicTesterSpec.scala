@@ -1,8 +1,8 @@
 package work.k33.calpoly.csc530.pact
 
 import org.scalatest.FlatSpec
-import org.scalatest.Assertions._
 import org.scalatest.Matchers._
+import work.k33.calpoly.csc530.ConcolicTester
 
 /**
   * Created by andrew on 5/8/17.
@@ -15,7 +15,7 @@ class PactConcolicTesterSpec extends FlatSpec {
         IdC('true),
         IdC('true))),
       List(IdC('input), IdC('input), IdC('input)))
-    val results = PactConcolicTester.test(expr, None)
+    val results = new ConcolicTester(PactInterpreter).test(expr, None)
     results.foreach(r => r.result should be('right))
   }
 
@@ -25,7 +25,7 @@ class PactConcolicTesterSpec extends FlatSpec {
         IdC('true),
         IdC('true))),
       List(IdC('input), IdC('input), IdC('input)))
-    val results = PactConcolicTester.test(expr, None)
+    val results = new ConcolicTester(PactInterpreter).test(expr, None)
     results.foreach(r => r.result should be('right))
   }
 }

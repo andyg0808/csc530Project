@@ -1,4 +1,4 @@
-package work.k33.calpoly.csc530.pact
+package work.k33.calpoly.csc530
 
 import scala.io.StdIn
 import scala.util.Random

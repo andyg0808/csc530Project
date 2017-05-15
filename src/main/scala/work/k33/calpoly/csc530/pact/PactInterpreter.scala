@@ -1,32 +1,53 @@
 package work.k33.calpoly.csc530.pact
 
-import work.k33.calpoly.csc530.pact.PactInterpreter._
+import work.k33.calpoly.csc530._
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 case class PactInterpreterException(msg: String) extends RuntimeException(msg)
 
-object PactInterpreter {
+object PactInterpreter extends Interpreter[ExprC] {
   type Env = Map[Symbol, Value]
   type SymbolicEnv = Map[Symbol, SymbolicValue]
+
+  def parse(program: String): ExprC = {
+    PactParser.parse(SExp.from(program))
+  }
+
+  def execute(ast: ExprC, inputProvider: InputProvider): Result[ExprC] = {
+    new PactInterpreter(inputProvider).execute(ast)
+  }
+
+  def gatherTerms(expr: ExprC): Set[ExprC] = {
+    val children: Set[ExprC] = expr match {
+      case LamC(_, body) => gatherTerms(body)
+      case IfC(i, t, e) => Set(i, t, e).flatMap(gatherTerms)
+      case AppC(func, args) => (Set(func) ++ args).flatMap(gatherTerms)
+      case _ => Set()
+    }
+    children + expr
+  }
 }
 
 class PactInterpreter(inputProvider: InputProvider) {
+
+  import PactInterpreter._
+
   var symbolicVariableIndex = 0
   val coverage: mutable.Set[ExprC] = mutable.Set()
   val inputsRead: ArrayBuffer[Int] = ArrayBuffer()
   val constraints: ArrayBuffer[SymbolicBool] = ArrayBuffer()
 
   def topInterp(program: String): String = {
-    execute(PactParser.parse(SExp.from(program))).result.fold(identity, identity)
+    execute(parse(program)).result.fold(identity, identity)
   }
 
   def runAST(expr: ExprC): Value = {
     interp(expr, INITIAL_ENV, INITIAL_SYMBOLIC_ENV).concrete
   }
 
-  def execute(expr: ExprC): Result = {
+  def execute(expr: ExprC): Result[ExprC] = {
     val result: Either[String, String] =
       try {
         val Values(value, _) = interp(expr, INITIAL_ENV, INITIAL_SYMBOLIC_ENV)

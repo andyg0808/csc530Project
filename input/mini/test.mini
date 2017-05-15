@@ -1,0 +1,23 @@
+fun main() int {
+    int x;
+    int y;
+    int z;
+
+    x = read;
+    y = read;
+
+    if (x + y == 0) {
+        if (x * y == -16) {
+            z = read;
+            return 10 / z;
+        } else {
+            return 20;
+        }
+    } else {
+        if (x != 42) {
+            return 5 / (x + 357);
+        } else {
+            return 1 / x;
+        }
+    }
+}

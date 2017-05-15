@@ -1,6 +1,7 @@
 package work.k33.calpoly.csc530.pact
 
 import org.scalatest.{FlatSpec, Matchers}
+import work.k33.calpoly.csc530.StdInProvider
 
 object PactInterpreterSpec {
   final val TESTCASE: String = "((lam (empty) ((lam (cons) ((lam (empty?) ((lam (first) ((lam (rest) ((lam (Y)" +

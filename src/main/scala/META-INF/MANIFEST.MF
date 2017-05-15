@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
-Main-Class: work.k33.calpoly.csc530.pact.PactConcolicTester
+Main-Class: work.k33.calpoly.csc530.ConcolicTester
 

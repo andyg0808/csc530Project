@@ -1,4 +1,4 @@
-package work.k33.calpoly.csc530.pact
+package work.k33.calpoly.csc530
 
 import com.microsoft.z3._
 
@@ -16,8 +16,12 @@ class ConstraintSolver(constraints: List[SymbolicBool], numSymbols: Int) {
     status match {
       case Status.SATISFIABLE =>
         val model = solver.getModel
-        Some(constants.mapValues(model.getConstInterp(_) match {
-          case intNum: IntNum => intNum.getInt
+        Some(constants.flatMap({
+          case (idx, const) =>
+            model.getConstInterp(const) match {
+              case intNum: IntNum => Some(idx -> intNum.getInt64.toInt)
+              case null => None
+            }
         }))
       case _ => None
     }
