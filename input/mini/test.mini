@@ -20,6 +20,4 @@ fun main() int {
             return 1 / x;
         }
     }
-
-    return 0;
 }
