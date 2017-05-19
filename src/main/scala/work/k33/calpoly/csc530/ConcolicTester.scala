@@ -2,7 +2,10 @@ package work.k33.calpoly.csc530
 
 import java.nio.file.{Files, Paths}
 
+import Console.{GREEN, RED, RESET}
 import work.k33.calpoly.csc530.mini.MiniInterpreter
+import work.k33.calpoly.csc530.mini.ast.MiniAST
+import work.k33.calpoly.csc530.mini.ast.statement.Statement
 import work.k33.calpoly.csc530.pact._
 
 import scala.collection.mutable
@@ -81,5 +84,23 @@ class ConcolicTester[T](interpreter: Interpreter[T]) {
     val iterations = test(ast, maxIterations, retFunc)
     println(s"\nCoverage: ${totalCoverage.size}/${maxCoverage.size}")
     println(s"Iterations: ${iterations}")
+    val coveredLines = new mutable.BitSet()
+    totalCoverage.foreach(line => {
+      line match {
+        case s: Statement => {
+          if (s.lineNum > 0) {
+            coveredLines += s.lineNum
+          }
+        }
+        case _ =>
+      }
+    })
+    program.split("\n").zipWithIndex.foreach{case (line, idx) => {
+      if (coveredLines.contains(idx + 1)) {
+        println(GREEN + line + RESET)
+      } else {
+        println(RED + line + RESET)
+      }
+    }}
   }
 }
