@@ -5,7 +5,7 @@ def sh *args
 end
 def runCompiler file, *args
    all_args = [file] + args
-   sh './sbtw', 'run', *all_args
+   sh './sbtw', "runMain work.k33.calpoly.csc530.ConcolicTester #{all_args.join(' ')} 10"
 end
 def runResult file, input, &blk
    output = File.basename(file, '.ll')
