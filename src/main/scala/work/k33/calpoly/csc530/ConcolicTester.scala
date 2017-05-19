@@ -37,32 +37,39 @@ object ConcolicTester extends App {
 }
 
 class ConcolicTester[T](interpreter: Interpreter[T]) {
-  def test(ast: T, maxIterations: Option[Int]): Seq[Result[T]] = {
-    val ret = new ArrayBuffer[Result[T]]
+  /**
+    *
+    * @param ast           The AST of the program to test.
+    * @param maxIterations The maximum number of iterations to run
+    * @param f             A function to run on each intermediate result. Can be used to print output if desired.
+    * @return true if all paths were checked
+    */
+  def test(ast: T, maxIterations: Option[Int], f: Result[T] => Unit): Int = {
     var iterations = 0
     val workList: mutable.Queue[Input] = mutable.Queue(Input(Map(), 1))
     while (workList.nonEmpty && maxIterations.forall(iterations < _)) {
       val input = workList.dequeue()
       val res = interpreter.execute(ast, new ConcolicInputProvider(input.inputs))
-      ret += res
+      f(res)
       val Result(_, constraints, numSymbols, _, _) = res
       for (i <- input.bound to constraints.size) {
         val pc = constraints.takeRight(i)
         val toSolve = NotS(pc.head) :: pc.tail
-        new ConstraintSolver(toSolve, numSymbols).solve().foreach(
+        val solver = new ConstraintSolver(toSolve, numSymbols)
+        solver.solve().foreach(
           newInput => workList.enqueue(Input(newInput, i + 1)))
+        solver.close()
       }
       iterations += 1
     }
-    ret
+    iterations
   }
 
   def test(program: String, maxIterations: Option[Int]): Unit = {
     val ast = interpreter.parse(program)
     val maxCoverage = interpreter.gatherTerms(ast)
     val totalCoverage = mutable.Set[T]()
-    val results = test(ast, maxIterations)
-    results.foreach(r => {
+    val retFunc = (r: Result[T]) => {
       val Result(result, _, _, coverage, inputs) = r
       totalCoverage ++= coverage
       val inputStr = inputs.mkString("[", ", ", "]")
@@ -70,8 +77,9 @@ class ConcolicTester[T](interpreter: Interpreter[T]) {
         case Left(errorMsg) => println(s"Inputs $inputStr:\n    Caused ***$errorMsg***")
         case Right(res) => println(s"Inputs $inputStr:\n    Result: $res ")
       }
-    })
+    }
+    val iterations = test(ast, maxIterations, retFunc)
     println(s"\nCoverage: ${totalCoverage.size}/${maxCoverage.size}")
-    println(s"Iterations: ${results.size}")
+    println(s"Iterations: ${iterations}")
   }
 }
