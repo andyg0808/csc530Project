@@ -153,7 +153,20 @@ case class BinaryExpression(lineNum: Int, operator: BinaryOperator, left: Expres
     }
     val concVal = INTERP_MAP(operator)(leftVal, rightVal)
     val symVal = INTERP_SYM_MAP(operator)(leftSymVal, rightSymVal)
-    MiniValues(concVal, symVal)
+    val optSimVal = symVal match {
+      case ArithS(op, NumS(l), NumS(r)) => op match {
+        case '+ => NumS(l + r)
+        case '- => NumS(l - r)
+        case _ => symVal
+      }
+      case LogicS(op, BoolS(left), BoolS(right)) => op match {
+        case '&& => BoolS(left && right)
+        case '|| => BoolS(left || right)
+        case _ => symVal
+      }
+      case _ => symVal
+    }
+    MiniValues(concVal, optSimVal)
   }
 
   def gatherTerms: Set[MiniAST] = Set(left, right).flatMap(_.gatherTerms) + this

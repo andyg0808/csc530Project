@@ -37,7 +37,10 @@ class UnaryExpression private(val lineNum: Int, val operator: UnaryOperator, val
 
   def interp(state: State): MiniValues = {
     (operator, Expression.interp(operand, state)) match {
+      case (MINUS, MiniValues(Num(x), ArithS('-, NumS(0), s: SymbolicNum))) => MiniValues(Num(-x), s)
+      case (MINUS, MiniValues(Num(x), NumS(s))) => MiniValues(Num(-x), NumS(-s))
       case (MINUS, MiniValues(Num(x), s: SymbolicNum)) => MiniValues(Num(-x), ArithS('-, NumS(0), s))
+      case (NOT, MiniValues(Bool(x), NotS(s: SymbolicBool))) => MiniValues(Bool(!x), s)
       case (NOT, MiniValues(Bool(x), s: SymbolicBool)) => MiniValues(Bool(!x), NotS(s))
     }
   }
