@@ -27,6 +27,10 @@ class ConstraintSolver(constraints: List[SymbolicBool], numSymbols: Int) {
     }
   }
 
+  def close(): Unit = {
+    context.close()
+  }
+
   def toZ3Expr(symbolicNum: SymbolicNum): ArithExpr = {
     symbolicNum match {
       case IdS(index) => constants(index)

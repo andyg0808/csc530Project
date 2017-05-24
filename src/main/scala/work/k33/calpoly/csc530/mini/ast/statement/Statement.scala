@@ -14,4 +14,5 @@ object Statement {
 trait Statement extends MiniAST {
   def semanticCheck(tables: Tables, function: Function): Boolean
   def interp(state: State): Option[MiniValues]
+  def lineNum: Int
 }

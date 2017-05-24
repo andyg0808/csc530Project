@@ -15,8 +15,8 @@ class PactConcolicTesterSpec extends FlatSpec {
         IdC('true),
         IdC('true))),
       List(IdC('input), IdC('input), IdC('input)))
-    val results = new ConcolicTester(PactInterpreter).test(expr, None)
-    results.foreach(r => r.result should be('right))
+//    val results = new ConcolicTester(PactInterpreter).test(expr, None)
+//    results.foreach(r => r.result should be('right))
   }
 
   "||" should "work under concolic testing" in {
@@ -25,7 +25,7 @@ class PactConcolicTesterSpec extends FlatSpec {
         IdC('true),
         IdC('true))),
       List(IdC('input), IdC('input), IdC('input)))
-    val results = new ConcolicTester(PactInterpreter).test(expr, None)
-    results.foreach(r => r.result should be('right))
+//    val results = new ConcolicTester(PactInterpreter).test(expr, None)
+//    results.foreach(r => r.result should be('right))
   }
 }
