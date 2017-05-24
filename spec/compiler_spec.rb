@@ -52,8 +52,10 @@ def runBenchmark *args
                files[:ccode] = ipath
             end
          end
-         runCompiler *([files[:program]] + args)
-         #runTest File.basename(files[:program], '.mini')+'.ll', files[:input], files[:output]
+         it "tests #{File.basename dir}" do
+            runCompiler *([files[:program]] + args)
+            #runTest File.basename(files[:program], '.mini')+'.ll', files[:input], files[:output]
+         end
       end
    end
 end
@@ -64,11 +66,15 @@ describe "concolic tester" do
    #   runTest 'test1.ll', 'input', 'output'
    #end
 
-   it "compiles the benchmark for mini" do
+   context "the benchmark for mini" do
       runBenchmark
    end
 
    it "compiles the test case for pact" do
       runCompiler 'input/pact/test.pact'
+   end
+
+   it "compiles the demo program" do
+      runCompiler 'demo.mini'
    end
 end

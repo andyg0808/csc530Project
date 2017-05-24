@@ -54,15 +54,28 @@ class ConcolicTester[T](interpreter: Interpreter[T]) {
       val input = workList.dequeue()
       val res = interpreter.execute(ast, new ConcolicInputProvider(input.inputs))
       f(res)
-      val Result(_, constraints, numSymbols, _, _) = res
+      val Result(_, fullConstraints, numSymbols, _, _) = res
+      // Remove unneeded constraints
+      val constraints = fullConstraints.filter{
+        case BoolS(_) => false
+        case _ => true
+      }
+      val start = constraints.takeRight(input.bound-1)
+      val solver = new ConstraintSolver(start, numSymbols)
+      var lastHead: Option[SymbolicBool] = None
       for (i <- input.bound to constraints.size) {
         val pc = constraints.takeRight(i)
-        val toSolve = NotS(pc.head) :: pc.tail
-        val solver = new ConstraintSolver(toSolve, numSymbols)
+        if (lastHead.isDefined) {
+          solver.add(List(lastHead.get))
+        }
+        lastHead = Some(pc.head)
+        solver.push()
+        solver.add(List(NotS(pc.head)))
         solver.solve().foreach(
           newInput => workList.enqueue(Input(newInput, i + 1)))
-        solver.close()
+        solver.pop()
       }
+      solver.close()
       iterations += 1
     }
     iterations
@@ -77,8 +90,8 @@ class ConcolicTester[T](interpreter: Interpreter[T]) {
       totalCoverage ++= coverage
       val inputStr = inputs.mkString("[", ", ", "]")
       result match {
-        case Left(errorMsg) => println(s"Inputs $inputStr:\n    Caused ***$errorMsg***")
-        case Right(res) => println(s"Inputs $inputStr:\n    Result: $res ")
+        case Left(errorMsg) => println(s"Inputs $inputStr:\n    ${Console.RED}Caused ***$errorMsg***${Console.RESET}")
+        case Right(res) => println(s"Inputs $inputStr:\n    ${Console.GREEN}Result: $res ${Console.RESET}")
       }
     }
     val iterations = test(ast, maxIterations, retFunc)
