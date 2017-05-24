@@ -90,8 +90,8 @@ class ConcolicTester[T](interpreter: Interpreter[T]) {
       totalCoverage ++= coverage
       val inputStr = inputs.mkString("[", ", ", "]")
       result match {
-        case Left(errorMsg) => println(s"Inputs $inputStr:\n    Caused ***$errorMsg***")
-        case Right(res) => println(s"Inputs $inputStr:\n    Result: $res ")
+        case Left(errorMsg) => println(s"Inputs $inputStr:\n    ${Console.RED}Caused ***$errorMsg***${Console.RESET}")
+        case Right(res) => println(s"Inputs $inputStr:\n    ${Console.GREEN}Result: $res ${Console.RESET}")
       }
     }
     val iterations = test(ast, maxIterations, retFunc)
