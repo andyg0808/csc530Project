@@ -54,15 +54,28 @@ class ConcolicTester[T](interpreter: Interpreter[T]) {
       val input = workList.dequeue()
       val res = interpreter.execute(ast, new ConcolicInputProvider(input.inputs))
       f(res)
-      val Result(_, constraints, numSymbols, _, _) = res
+      val Result(_, fullConstraints, numSymbols, _, _) = res
+      // Remove unneeded constraints
+      val constraints = fullConstraints.filter{
+        case BoolS(_) => false
+        case _ => true
+      }
+      val start = constraints.takeRight(input.bound-1)
+      val solver = new ConstraintSolver(start, numSymbols)
+      var lastHead: Option[SymbolicBool] = None
       for (i <- input.bound to constraints.size) {
         val pc = constraints.takeRight(i)
-        val toSolve = NotS(pc.head) :: pc.tail
-        val solver = new ConstraintSolver(toSolve, numSymbols)
+        if (lastHead.isDefined) {
+          solver.add(List(lastHead.get))
+        }
+        lastHead = Some(pc.head)
+        solver.push()
+        solver.add(List(NotS(pc.head)))
         solver.solve().foreach(
           newInput => workList.enqueue(Input(newInput, i + 1)))
-        solver.close()
+        solver.pop()
       }
+      solver.close()
       iterations += 1
     }
     iterations
