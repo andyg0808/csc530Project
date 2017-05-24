@@ -21,7 +21,13 @@ case class WhileStatement(lineNum: Int, guard: Expression, body: Statement) exte
   def interp(state: State): Option[MiniValues] = {
     var cond = Expression.interp(guard, state)
     while (cond.concrete.asInstanceOf[Bool].bool) {
-      state.constraints += cond.symbolic.asInstanceOf[SymbolicBool]
+      var constraint = cond.symbolic.asInstanceOf[SymbolicBool]
+
+      /* Add this constraint if it does not already exist in the program state */
+      if (!state.constraints.contains(constraint)) {
+         state.constraints += constraint
+      }
+
       Statement.interp(body, state).foreach(x => return Some(x))
       cond = Expression.interp(guard, state)
     }
