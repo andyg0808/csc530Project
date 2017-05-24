@@ -1,0 +1,45 @@
+int current;
+int standby;
+int gridsize;
+
+fun show(int out, int loc) void {
+   if (loc < (gridsize - 1)) {
+      print out;
+   } else {
+      print out endl;
+   }
+}
+
+fun output(int loc, int next) int {
+   int res;
+   if (next > loc) {
+      res = 0;
+   } else {
+      res = current;
+      current = standby;
+      standby = res;
+      res = 1;
+   }
+   show(current, loc);
+   return res;
+}
+fun main() int {
+   int x, y;
+   int next;
+   gridsize = 2;
+   y = 0;
+   while (y < gridsize) {
+      next = read; 
+      current = 1;
+      standby = 0;
+      x = 0;
+      while (x < gridsize) {
+         if (output(x, next) == 1) {
+            next = read;
+         }
+         x = x + 1;
+      }
+      y = y + 1;
+   }
+   return 0;
+}
