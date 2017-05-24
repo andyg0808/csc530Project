@@ -1,0 +1,85 @@
+struct Node {
+   struct Node below;
+   int value;
+};
+
+struct Node stack;
+
+fun push(int val) void {
+   struct Node tos;
+   tos = new Node;
+   tos.below = stack;
+   tos.value = val;
+   stack = tos;
+}
+
+fun pop() int {
+   struct Node tos;
+   int ret;
+   tos = stack;
+   stack = stack.below;
+   ret = stack.value;
+   delete tos;
+   return ret;
+}
+
+fun interpret(int input) int {
+   int a, b;
+   if (input < 0) {
+      if (input == -10) {
+         return 1;
+      }
+      if (input == -11) {
+         print stack.value endl;
+         return 0;
+      }
+      b = pop();
+      a = pop();
+      if (input == -1) {
+         push(a + b);
+         return 0;
+      }
+      if (input == -2) {
+         push(a - b);
+         return 0;
+      }
+      if (input == -3) {
+         push(a * b);
+         return 0;
+      }
+      if (input == -4) {
+         push(a / b);
+         return 0;
+      }
+      push(a);
+      push(b);
+      return 0;
+   } else {
+      push(input);
+      return 0;
+   }
+}
+
+fun do() void {
+   int input;
+   input = read;
+   if (interpret(input) != 0) {
+      return;
+   }
+}
+
+fun main() int 
+{
+   int inputs;
+
+   inputs = 0;
+   # Push a head value onto the stack
+   push(0);
+
+   while (inputs < 7) {
+      do();
+      inputs = inputs + 1;
+   }
+
+   return 1;
+}
