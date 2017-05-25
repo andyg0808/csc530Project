@@ -23,6 +23,10 @@ package work.k33.calpoly.csc530.pact
   <atom> ::= <symbol>
           |  <integer>
           |  #t  |  #f
+
+  ** This file has been modified by Andrew Gilbert on 24 May 2017  **
+  * I removed the main() method which called the tests. This makes  *
+  * it more convenient to use in a project with its own main class. *
 */
 
 
@@ -101,11 +105,6 @@ object SExp {
     val sexp3 = from(input3)
     println(sexp3)
   }
-
-  def main(args: Array[String]) {
-    test()
-  }
-
 }
 
 /**
