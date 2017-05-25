@@ -70,4 +70,6 @@ case class Program(
   }
 
   def gatherTerms: Set[MiniAST] = funcs.flatMap(_.gatherTerms).toSet + this
+
+  def lineNum: Int = -1
 }
