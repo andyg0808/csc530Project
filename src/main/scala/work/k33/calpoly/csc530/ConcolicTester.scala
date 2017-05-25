@@ -3,7 +3,8 @@ package work.k33.calpoly.csc530
 import java.nio.file.{Files, Paths}
 
 import work.k33.calpoly.csc530.mini.MiniInterpreter
-import work.k33.calpoly.csc530.mini.ast.MiniAST
+import work.k33.calpoly.csc530.mini.ast.{MiniAST, Program}
+import work.k33.calpoly.csc530.mini.ast.statement.Statement
 import work.k33.calpoly.csc530.pact._
 
 import scala.Console.{GREEN, RED, RESET}
@@ -27,9 +28,19 @@ object ConcolicTester extends App {
     if (filename.endsWith(".pact"))
       new ConcolicTester(PactInterpreter).test(fileToString(filename), maxIterations)
     else if (filename.endsWith(".mini"))
-      new ConcolicTester(MiniInterpreter).test(fileToString(filename), maxIterations)
+      new ConcolicTester(MiniInterpreter).gatherInputs(fileToString(filename), maxIterations, mutate)
     else
       println("unsupported file type: file must end with .pact or .mini")
+  }
+
+  private def mutate(miniAST: MiniAST): MiniAST = {
+    miniAST match {
+      case p: Program => {
+        p.funcs.head.body.statements.map{case r => r}
+        p
+      }
+      case o => o
+    }
   }
 
   private def fileToString(filename: String): String = {
@@ -45,13 +56,14 @@ class ConcolicTester[T](interpreter: Interpreter[T]) {
     * @param f             A function to run on each intermediate result. Can be used to print output if desired.
     * @return number of times the program was run
     */
-  def test(ast: T, maxIterations: Option[Int], f: Result[T] => Unit): Int = {
+  def test[A](ast: T, maxIterations: Option[Int], f: Result[T] => A): Seq[A] = {
+    val results = new ArrayBuffer[A]
     var iterations = 0
     val workList: mutable.Queue[Input] = mutable.Queue(Input(Map(), 1))
     while (workList.nonEmpty && maxIterations.forall(iterations < _)) {
       val input = workList.dequeue()
       val res = interpreter.execute(ast, new ConcolicInputProvider(input.inputs))
-      f(res)
+      results += f(res)
       val Result(_, fullConstraints, numSymbols, _, _) = res
       // Remove unneeded constraints
       val constraints = fullConstraints.filter {
@@ -76,7 +88,29 @@ class ConcolicTester[T](interpreter: Interpreter[T]) {
       solver.close()
       iterations += 1
     }
-    iterations
+    results
+  }
+
+  def gatherInputs(program: String, maxIterations: Option[Int], mutate: T => T): Unit = {
+    val ast = interpreter.parse(program)
+    val retFunc = (r: Result[T]) => {
+      r.result match {
+        case Left(_) => None
+        case Right(_) => Some(r.inputs)
+      }
+    }
+
+    val successInputs = test(ast, maxIterations, retFunc).filter(_.isDefined).map(_.get)
+
+    val mutated = mutate(ast)
+    for (input <- successInputs) {
+      val inputMap = input.map(i => i -> i).toMap
+      val res = interpreter.execute(mutated, new ConcolicInputProvider(inputMap))
+      res.result match {
+        case Left(errorMsg) => throw new RuntimeException("Failed on second use")
+        case Right(res) => println(s"Inputs ${input.mkString("[", ", ", "]")}\n    ${Console.GREEN}Result: $res ${Console.RESET}")
+      }
+    }
   }
 
   def test(program: String, maxIterations: Option[Int]): Unit = {
