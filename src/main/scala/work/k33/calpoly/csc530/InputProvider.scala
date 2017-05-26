@@ -19,3 +19,10 @@ class ConcolicInputProvider(inputs: Map[Int, Int]) extends InputProvider {
     value
   }
 }
+
+class RandomInputProvider(seed : Long) extends InputProvider {
+  private var rng = new Random(seed)
+  def readInt(): Int = {
+    rng.nextInt() % 10000 - 5000
+  }
+}
