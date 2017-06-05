@@ -60,9 +60,6 @@ fun interpret(int input) int {
    }
 }
 
-fun do() void {
-}
-
 fun main() int 
 {
    int inputs;
@@ -72,7 +69,7 @@ fun main() int
    # Push a head value onto the stack
    push(0);
 
-   while (inputs < 7) {
+   while (inputs < 5) {
       input = read;
       if (interpret(input) != 0) {
          return 1;
