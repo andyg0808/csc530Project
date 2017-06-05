@@ -11,6 +11,10 @@ z3/build/com.microsoft.z3.jar:
 	cd z3; python3 ./scripts/mk_make.py --java
 	cd z3/build; $(MAKE)
 
+# This is needed to run the Antlr-generated code
+lib/antlr-4.6-complete.jar:
+	curl -o $@ https://github.com/antlr/website-antlr4/raw/gh-pages/download/antlr-4.6-complete.jar
+
 # Basic clean for everyday use
 clean:
 	$(SBT) clean
