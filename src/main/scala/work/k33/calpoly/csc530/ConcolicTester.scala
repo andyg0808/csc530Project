@@ -12,12 +12,17 @@ import scala.collection.mutable
 case class Input(inputs: Map[Int, Int], bound: Int)
 
 object ConcolicTester extends App {
+  def timer(exec: => Unit): Unit = {
+    val startTime = System.nanoTime()
+    exec
+    println(Console.MAGENTA + s"Time taken: ${(System.nanoTime() - startTime)*Math.pow(10, -9)}\n" + Console.RESET)
+  }
   override def main(args: Array[String]): Unit = {
     args match {
-      case Array(filename) =>
-        testFile(filename, None)
+      case Array(filename) => timer(testFile(filename, None))
+
       case Array(filename, iterationsStr) =>
-        testFile(filename, Some(iterationsStr.toInt))
+        timer(testFile(filename, Some(iterationsStr.toInt)))
       case _ =>
         println("usage: scala ConcolicTester <filename> [max-iterations]")
     }
