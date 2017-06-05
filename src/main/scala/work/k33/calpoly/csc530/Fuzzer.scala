@@ -55,17 +55,13 @@ class Fuzzer[T](interpreter: Interpreter[T]) {
     */
   def test(ast: T, maxIterations: Option[Int], f: Result[T] => Unit,
     seed : Long): Int = {
+    val seeder = new Random(seed)
     var iterations = 0
-    var nSeed = seed
-    val workList: mutable.Queue[Input] = mutable.Queue(Input(Map(), 1))
     while (maxIterations.forall(iterations < _)) {
-      val res = interpreter.execute(ast, new RandomInputProvider(nSeed))
+      val res = interpreter.execute(ast, new RandomInputProvider(seeder.nextLong()))
       f(res)
       val Result(_, fullConstraints, numSymbols, _, _) = res
       iterations += 1
-
-      val rng = new Random(nSeed)
-      nSeed = rng.nextLong
     }
     iterations
   }
