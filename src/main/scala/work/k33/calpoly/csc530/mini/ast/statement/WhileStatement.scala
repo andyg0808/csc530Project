@@ -24,9 +24,7 @@ case class WhileStatement(lineNum: Int, guard: Expression, body: Statement) exte
       var constraint = cond.symbolic.asInstanceOf[SymbolicBool]
 
       /* Add this constraint if it does not already exist in the program state */
-      if (!state.constraints.contains(constraint)) {
          state.constraints += constraint
-      }
 
       Statement.interp(body, state).foreach(x => return Some(x))
       cond = Expression.interp(guard, state)
