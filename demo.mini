@@ -17,8 +17,8 @@ fun pop() int {
    struct Node tos;
    int ret;
    tos = stack;
+   ret = tos.value;
    stack = stack.below;
-   ret = stack.value;
    delete tos;
    return ret;
 }
