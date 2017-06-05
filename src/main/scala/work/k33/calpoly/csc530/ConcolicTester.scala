@@ -1,5 +1,6 @@
 package work.k33.calpoly.csc530
 
+import java.io.{BufferedReader, FileWriter}
 import java.nio.file.{Files, Paths}
 
 import work.k33.calpoly.csc530.mini.MiniInterpreter
@@ -53,6 +54,7 @@ class ConcolicTester[T](interpreter: Interpreter[T]) {
   def test(ast: T, maxIterations: Option[Int], f: Result[T] => Unit): Int = {
     var iterations = 0
     val workList: mutable.Queue[Input] = mutable.Queue(Input(Map(), 1))
+    var index = 0
     while (workList.nonEmpty && maxIterations.forall(iterations < _)) {
       val input = workList.dequeue()
       val res = interpreter.execute(ast, new ConcolicInputProvider(input.inputs))
@@ -62,6 +64,25 @@ class ConcolicTester[T](interpreter: Interpreter[T]) {
       val constraints = fullConstraints.filter {
         case BoolS(_) => false
         case _ => true
+      }
+
+      if (constraints.length > index) {
+        val writer = new FileWriter(s"../output/iteration$iterations.dot")
+        writer.write("digraph demo {\n")
+        var last: Option[SymbolicBool] = None
+        var i: Int = 0
+        for (const <- constraints) {
+          if (last.isDefined) {
+            writer.write(s"n${i-1} -> n$i\n")
+            writer.write(s"n${i-1} -> r$i\n")
+          }
+          last = Some(const)
+          writer.write(s"""n$i [label="$const"]\n""")
+          i += 1
+        }
+        writer.write("}\n")
+        writer.close()
+        index = constraints.length
       }
       val start = constraints.takeRight(input.bound - 1)
       val solver = new ConstraintSolver(start, numSymbols)
