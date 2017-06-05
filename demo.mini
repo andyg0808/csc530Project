@@ -61,25 +61,24 @@ fun interpret(int input) int {
 }
 
 fun do() void {
-   int input;
-   input = read;
-   if (interpret(input) != 0) {
-      return;
-   }
 }
 
 fun main() int 
 {
    int inputs;
+   int input;
 
    inputs = 0;
    # Push a head value onto the stack
    push(0);
 
    while (inputs < 7) {
-      do();
+      input = read;
+      if (interpret(input) != 0) {
+         return 1;
+      }
       inputs = inputs + 1;
    }
 
-   return 1;
+   return 0;
 }
