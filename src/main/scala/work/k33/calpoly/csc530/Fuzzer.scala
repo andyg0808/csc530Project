@@ -57,7 +57,6 @@ class Fuzzer[T](interpreter: Interpreter[T]) {
     var iterations = 0
     val workList: mutable.Queue[Input] = mutable.Queue(Input(Map(), 1))
     while (maxIterations.forall(iterations < _)) {
-      val input = workList.dequeue()
       val res = interpreter.execute(ast, new RandomInputProvider(seed))
       f(res)
       val Result(_, fullConstraints, numSymbols, _, _) = res
