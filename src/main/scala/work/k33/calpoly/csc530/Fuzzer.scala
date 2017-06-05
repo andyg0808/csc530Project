@@ -9,6 +9,7 @@ import work.k33.calpoly.csc530.pact._
 import scala.Console.{GREEN, RED, RESET}
 import scala.collection.mutable
 import scala.compat.Platform
+import scala.util.Random
 
 /**
  * Simple fuzzer that uses randomized inputs
@@ -55,12 +56,16 @@ class Fuzzer[T](interpreter: Interpreter[T]) {
   def test(ast: T, maxIterations: Option[Int], f: Result[T] => Unit,
     seed : Long): Int = {
     var iterations = 0
+    var nSeed = seed
     val workList: mutable.Queue[Input] = mutable.Queue(Input(Map(), 1))
     while (maxIterations.forall(iterations < _)) {
-      val res = interpreter.execute(ast, new RandomInputProvider(seed))
+      val res = interpreter.execute(ast, new RandomInputProvider(nSeed))
       f(res)
       val Result(_, fullConstraints, numSymbols, _, _) = res
       iterations += 1
+
+      val rng = new Random(nSeed)
+      nSeed = rng.nextLong
     }
     iterations
   }
